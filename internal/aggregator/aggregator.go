@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/TauAdam/digest-bot/internal/model"
 	"github.com/TauAdam/digest-bot/internal/rss-sources"
+	"github.com/TauAdam/digest-bot/pkg/set"
 	"log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -21,8 +23,8 @@ type Aggregator struct {
 	articles ArticleRepo
 	sources  SourceRepo
 
-	updateInterval time.Duration
-	whitelist      []string
+	updateInterval  time.Duration
+	ignoredKeywords []string
 }
 
 type Source interface {
@@ -38,10 +40,10 @@ func New(
 	whitelist []string,
 ) *Aggregator {
 	return &Aggregator{
-		articles:       articleRepo,
-		sources:        sourceRepo,
-		updateInterval: updateInterval,
-		whitelist:      whitelist,
+		articles:        articleRepo,
+		sources:         sourceRepo,
+		updateInterval:  updateInterval,
+		ignoredKeywords: whitelist,
 	}
 }
 
@@ -77,4 +79,29 @@ func (a *Aggregator) Aggregate(ctx context.Context) error {
 	wg.Wait()
 
 	return nil
+}
+
+func (a *Aggregator) processItems(ctx context.Context, source Source, items []model.Item) error {
+	for _, item := range items {
+		item.Date = item.Date.UTC()
+
+		if a.isItemIrrelevant(item) {
+			continue
+		}
+		//TODO Save item to database
+	}
+}
+
+func (a *Aggregator) isItemIrrelevant(item model.Item) bool {
+	categories := set.New(item.Categories...)
+
+	for _, keyword := range a.ignoredKeywords {
+		titleContainsKeyword := strings.Contains(strings.ToLower(item.Title), strings.ToLower(keyword))
+
+		if categories.Includes(keyword) || titleContainsKeyword {
+			return true
+		}
+	}
+
+	return false
 }
