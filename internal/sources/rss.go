@@ -54,7 +54,7 @@ func (s RSSSource) Fetch(ctx context.Context) ([]model.Item, error) {
 	}
 
 	// Map RSS items to model items
-	return lo.Map(feed.Items, func(item *rss.Item, index int) model.Item {
+	return lo.Map(feed.Items, func(item *rss.Item, _ int) model.Item {
 		return model.Item{
 			Title:      item.Title,
 			Link:       item.Link,
