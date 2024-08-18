@@ -12,7 +12,7 @@ import (
 )
 
 type ArticleRepo interface {
-	Store(ctx context.Context, article model.Article) error
+	Save(ctx context.Context, article model.Article) error
 }
 
 type SourceRepo interface {
@@ -88,8 +88,19 @@ func (a *Aggregator) processItems(ctx context.Context, source Source, items []mo
 		if a.isItemIrrelevant(item) {
 			continue
 		}
-		//TODO Save item to database
+
+		if err := a.articles.Save(ctx, model.Article{
+			SourceID:    source.ID(),
+			Title:       item.Title,
+			Link:        item.Link,
+			Summary:     item.Summary,
+			PublishedAt: item.Date,
+		}); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (a *Aggregator) isItemIrrelevant(item model.Item) bool {
@@ -104,4 +115,24 @@ func (a *Aggregator) isItemIrrelevant(item model.Item) bool {
 	}
 
 	return false
+}
+
+func (a *Aggregator) Start(ctx context.Context) error {
+	ticker := time.NewTicker(a.updateInterval)
+	defer ticker.Stop()
+
+	if err := a.Aggregate(ctx); err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+			if err := a.Aggregate(ctx); err != nil {
+				return err
+			}
+		}
+	}
 }
