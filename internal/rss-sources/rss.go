@@ -1,4 +1,4 @@
-package sources
+package rss_sources
 
 import (
 	"context"
@@ -11,6 +11,14 @@ type RSSSource struct {
 	URL        string
 	SourceName string
 	SourceID   int64
+}
+
+func (s RSSSource) ID() int64 {
+	return s.SourceID
+}
+
+func (s RSSSource) Name() string {
+	return s.SourceName
 }
 
 func NewRSSSource(m model.Source) RSSSource {
