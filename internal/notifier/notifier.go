@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/TauAdam/digest-bot/internal/bot/markup"
 	"github.com/TauAdam/digest-bot/internal/model"
+	"github.com/go-shiori/go-readability"
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
 	"net/http"

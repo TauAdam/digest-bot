@@ -1,12 +1,13 @@
 package summary
 
 import (
+	"github.com/sashabaranov/go-openai"
 	"log"
 	"sync"
 )
 
 type OpenAISummarizer struct {
-	client  *openai.CLient
+	client  *openai.Client
 	prompt  string
 	enabled bool
 	mu      sync.Mutex
