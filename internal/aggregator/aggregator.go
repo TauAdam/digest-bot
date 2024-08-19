@@ -117,7 +117,7 @@ func (a *Aggregator) isItemIrrelevant(item model.Item) bool {
 	return false
 }
 
-func (a *Aggregator) Start(ctx context.Context) error {
+func (a *Aggregator) Run(ctx context.Context) error {
 	ticker := time.NewTicker(a.updateInterval)
 	defer ticker.Stop()
 

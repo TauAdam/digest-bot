@@ -32,7 +32,7 @@ type Notifier struct {
 	summarizer       Summarizer
 }
 
-func (n *Notifier) SelectAndPost(ctx context.Context) error {
+func (n *Notifier) Run(ctx context.Context) error {
 	topArticles, err := n.articles.UnsentArticles(ctx, time.Now().Add(-n.lookupTimeWindow), 1)
 	if err != nil {
 		return err
@@ -108,11 +108,11 @@ func removeRedundantNewLines(str string) string {
 
 func NewNotifier(
 	articles ArticleProvider,
+	summarizer Summarizer,
+	bot *tgbotapi.BotAPI,
 	sendInterval time.Duration,
 	lookupTimeWindow time.Duration,
 	channelID int64,
-	bot *tgbotapi.BotAPI,
-	summarizer Summarizer,
 ) *Notifier {
 	return &Notifier{
 		articles:         articles,
