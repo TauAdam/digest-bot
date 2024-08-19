@@ -3,6 +3,7 @@ package notifier
 import (
 	"context"
 	"fmt"
+	"github.com/TauAdam/digest-bot/internal/bot/markup"
 	"github.com/TauAdam/digest-bot/internal/model"
 	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io"
@@ -87,9 +88,9 @@ func (n *Notifier) sendArticle(article model.Article, summary string) error {
 
 	msg := tgbotapi.NewMessage(n.channelID, fmt.Sprintf(
 		messageFormat,
-		article.Title,
-		summary,
-		article.Link,
+		markup.MarkdownEscape(article.Title),
+		markup.MarkdownEscape(summary),
+		markup.MarkdownEscape(article.Link),
 	))
 
 	_, err := n.bot.Send(msg)
