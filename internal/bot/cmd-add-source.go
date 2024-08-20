@@ -7,7 +7,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type cmdArguments struct {
+type cmdAddArguments struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
@@ -18,7 +18,7 @@ type sourceProvider interface {
 
 func HandleCmdAddSource(storage sourceProvider) HandlerFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
-		args, err := ParseJSONInput[cmdArguments](update.Message.CommandArguments())
+		args, err := ParseJSONInput[cmdAddArguments](update.Message.CommandArguments())
 		if err != nil {
 			return err
 		}

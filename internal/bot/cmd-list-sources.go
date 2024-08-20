@@ -21,18 +21,21 @@ func HandleCmdListSources(storage sourceListProvider) HandlerFunc {
 			return err
 		}
 
-		var (
-			formattedSources = lo.Map(sources, func(src model.Source, _ int) string {
-				return prepareSources(src)
-			})
+		formattedSources := lo.Map(sources, func(src model.Source, _ int) string {
+			return prepareSources(src)
+		})
 
-			messageText = fmt.Sprintf(
-				"List of sources \\(total: %d\\):\n\n%s",
-				len(sources),
-				strings.Join(formattedSources, "\n\n"),
-			)
-			reply = tgbotapi.NewMessage(update.Message.Chat.ID, messageText)
+		messageText := fmt.Sprintf(
+			"List of sources \\(total: %d\\):\n\n%s",
+			len(sources),
+			strings.Join(formattedSources, "\n\n"),
 		)
+
+		if len(sources) == 0 {
+			messageText = "No sources found\\."
+		}
+
+		reply := tgbotapi.NewMessage(update.Message.Chat.ID, messageText)
 
 		reply.ParseMode = "MarkdownV2"
 

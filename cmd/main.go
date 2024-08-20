@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/TauAdam/digest-bot/internal/aggregator"
 	"github.com/TauAdam/digest-bot/internal/bot"
+	"github.com/TauAdam/digest-bot/internal/bot/middleware"
 	"github.com/TauAdam/digest-bot/internal/config"
 	"github.com/TauAdam/digest-bot/internal/notifier"
 	"github.com/TauAdam/digest-bot/internal/storage"
@@ -60,8 +61,24 @@ func main() {
 
 	digestBot := bot.New(botAPI)
 	digestBot.RegisterNewCommand("start", bot.HandleCmdStart())
-	digestBot.RegisterNewCommand("add", bot.HandleCmdAddSource(sourcesRepository))
-	digestBot.RegisterNewCommand("list", bot.HandleCmdListSources(sourcesRepository))
+	digestBot.RegisterNewCommand("add",
+		middleware.GuardAdmin(
+			config.Get().TelegramChannelID,
+			bot.HandleCmdAddSource(sourcesRepository),
+		),
+	)
+	digestBot.RegisterNewCommand("list",
+		middleware.GuardAdmin(
+			config.Get().TelegramChannelID,
+			bot.HandleCmdListSources(sourcesRepository),
+		),
+	)
+	digestBot.RegisterNewCommand("delete",
+		middleware.GuardAdmin(
+			config.Get().TelegramChannelID,
+			bot.HandleCmdDeleteSource(sourcesRepository),
+		),
+	)
 
 	go func(ctx context.Context) {
 		if err := aggregatorService.Run(ctx); err != nil {
