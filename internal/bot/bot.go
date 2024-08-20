@@ -20,6 +20,8 @@ func New(api *tgbotapi.BotAPI) *Bot {
 		api: api,
 	}
 }
+
+// RegisterNewCommand add new command to the bot
 func (b *Bot) RegisterNewCommand(cmd string, router HandlerFunc) {
 	if b.cmdRouter == nil {
 		b.cmdRouter = make(map[string]HandlerFunc)
@@ -39,7 +41,7 @@ func (b *Bot) handleUpdate(ctx context.Context, update tgbotapi.Update) {
 	var handler HandlerFunc
 
 	// currently bot only handle commands
-	if !update.Message.IsCommand() {
+	if update.Message == nil || !update.Message.IsCommand() {
 		return
 	}
 
