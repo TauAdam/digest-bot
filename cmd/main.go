@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/TauAdam/digest-bot/internal/aggregator"
+	"github.com/TauAdam/digest-bot/internal/bot"
 	"github.com/TauAdam/digest-bot/internal/config"
 	"github.com/TauAdam/digest-bot/internal/notifier"
 	"github.com/TauAdam/digest-bot/internal/storage"
@@ -55,6 +56,9 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	digestBot := bot.New(botAPI)
+	digestBot.RegisterNewCommand("start", bot.HandleCmdStart())
+
 	go func(ctx context.Context) {
 		if err := aggregatorService.Run(ctx); err != nil {
 			if !errors.Is(err, context.Canceled) {
@@ -66,13 +70,24 @@ func main() {
 		}
 	}(ctx)
 
-	if err := notifierService.Run(ctx); err != nil {
+	go func(ctx context.Context) {
+		if err := notifierService.Run(ctx); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				log.Printf("failed to run aggregatorService: %v", err)
+				return
+			}
+
+			log.Printf("aggregatorService stopped")
+		}
+	}(ctx)
+
+	if err := digestBot.Run(ctx); err != nil {
 		if !errors.Is(err, context.Canceled) {
-			log.Printf("failed to run aggregatorService: %v", err)
+			log.Printf("failed to run telegram bot: %v", err)
 			return
 		}
 
-		log.Printf("aggregatorService stopped")
+		log.Printf("telegram bot stopped")
 	}
 }
 
