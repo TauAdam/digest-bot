@@ -11,6 +11,7 @@ import (
 	"github.com/TauAdam/digest-bot/internal/summary"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"os/signal"
@@ -29,6 +30,7 @@ func main() {
 		log.Printf("failed to connect to db: %v", err)
 		return
 	}
+	defer db.Close()
 
 	var (
 		articleRepository = storage.NewArticleStorage(db)
@@ -97,7 +99,6 @@ func openDB() (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
 
 	return db, nil
 }

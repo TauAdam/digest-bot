@@ -24,3 +24,5 @@ go.work.sum
 # env file
 .env
 .idea
+config.hcl
+config.local.hcl

@@ -5,6 +5,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"runtime/debug"
+	"time"
 )
 
 type HandlerFunc func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error
@@ -27,6 +28,7 @@ func (b *Bot) RegisterNewCommand(cmd string, router HandlerFunc) {
 	b.cmdRouter[cmd] = router
 }
 
+// handleUpdate handles incoming updates
 func (b *Bot) handleUpdate(ctx context.Context, update tgbotapi.Update) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -36,6 +38,7 @@ func (b *Bot) handleUpdate(ctx context.Context, update tgbotapi.Update) {
 
 	var handler HandlerFunc
 
+	// currently bot only handle commands
 	if !update.Message.IsCommand() {
 		return
 	}
@@ -60,4 +63,23 @@ func (b *Bot) handleUpdate(ctx context.Context, update tgbotapi.Update) {
 		}
 	}
 
+}
+
+// Run starts the bot and listens for updates
+func (b *Bot) Run(ctx context.Context) error {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	updates := b.api.GetUpdatesChan(u)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case update := <-updates:
+			updateContext, updateCancel := context.WithTimeout(ctx, 5*time.Second)
+			b.handleUpdate(updateContext, update)
+			updateCancel()
+		}
+	}
 }
