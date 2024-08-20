@@ -60,7 +60,8 @@ func main() {
 
 	digestBot := bot.New(botAPI)
 	digestBot.RegisterNewCommand("start", bot.HandleCmdStart())
-	digestBot.RegisterNewCommand("addsource", bot.HandleCmdAddSource(sourcesRepository))
+	digestBot.RegisterNewCommand("add", bot.HandleCmdAddSource(sourcesRepository))
+	digestBot.RegisterNewCommand("list", bot.HandleCmdListSources(sourcesRepository))
 
 	go func(ctx context.Context) {
 		if err := aggregatorService.Run(ctx); err != nil {
